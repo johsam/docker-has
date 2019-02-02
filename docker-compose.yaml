@@ -1,0 +1,25 @@
+version: '3'
+
+services:
+  portainer:
+    container_name: portainer
+    image: portainer/portainer
+    volumes:
+      - /srv/docker/portainer:/data
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "9000:9000"
+  homeassistant:
+    container_name: home-assistant
+    restart: unless-stopped
+    image: homeassistant/raspberrypi3-homeassistant
+    #devices:
+    #  - /dev/serial/by-id/usb-0658_0200-if00:/dev/usbzwave
+    volumes:
+      - /srv/docker/hass-config:/config
+      - /etc/localtime:/etc/localtime:ro
+      - /srv/docker/hass_media:/media
+    network_mode: host
+    privileged: true
+    ports:
+      - "8123:8123"
