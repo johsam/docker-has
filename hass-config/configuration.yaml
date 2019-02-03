@@ -1,0 +1,168 @@
+homeassistant:
+  # Name of the location where Home Assistant is running
+  name: !secret home_name
+ 
+  # Location required to calculate the time the sun rises and sets
+ 
+  latitude: !secret home_latitude
+  longitude: !secret home_longitude
+  
+  unit_system: metric
+
+  # Impacts weather/sunrise data
+  elevation: !secret home_elevation
+  temperature_unit: C
+  time_zone: !secret home_timezone
+
+  customize:
+    zwave.fibaro_system_fgk101_door_opening_sensor:
+      friendly_name: Hallen
+      device_class: opening
+    sensor.yr_cloudiness:
+      friendly_name: Molnighet
+    sensor.yr_wind_direction:
+      friendly_name: Riktning
+    sensor.yr_wind_speed:
+      friendly_name: Hastighet
+    sensor.yr_pressure:
+      friendly_name: Lufttryck
+    sensor.yr_symbol:
+      friendly_name: Prognos
+
+# Show links to resources in log and frontend
+#introduction:
+
+# Enables support for tracking state changes over time.
+history:
+
+# Track the sun
+sun:
+
+# Checks for available updates
+updater:
+
+config:
+
+# Enables the frontend
+frontend:
+
+# Allows you to issue voice commands from the frontend
+#conversation:
+
+# Discover some devices automatically
+#discovery:
+
+# View all events in a logbook
+logbook:
+
+influxdb:
+  host: !secret influxdb_host
+  database: !secret influxdb_database
+  username: !secret influxdb_username
+  password: !secret influxdb_password
+
+zwave:
+  polling_interval: 60000
+#  usb_path: /dev/usbzwave
+
+
+http:
+  trusted_networks:
+    - 127.0.0.1
+    - !secret http_trust
+
+shell_command:
+  tell_hallonet: '/config/scripts/zmagnet.sh {{to}}'
+
+#automation: !include automations.yaml
+
+automation:
+- alias: Door Open
+  trigger:
+    platform: state
+    entity_id: binary_sensor.hallen_sensor
+    to: 'on'
+  action:
+    service: shell_command.tell_hallonet
+    data:
+      to: 'on'
+- alias: Door Closed
+  trigger:
+    platform: state
+    entity_id: binary_sensor.hallen_sensor
+    to: 'off'
+  action:
+    service: shell_command.tell_hallonet
+    data:
+      to: 'off'
+
+group:
+  default_view:
+    name: Ripstigen
+    view: no
+    entities:
+      - binary_sensor.hallen_sensor
+      - sensor.yr_symbol
+      - sun.sun
+      - group.yr
+      - group.speedtest
+  yr:
+    name: YR
+    view: no
+    entities:
+      - sensor.yr_symbol
+      - sensor.yr_cloudiness
+      - sensor.yr_pressure
+      - sensor.yr_condition
+      - sensor.yr_wind_direction
+      - sensor.yr_wind_speed
+      - sensor.yr_condition
+  speedtest:
+    name: Speedtest
+    view: no
+    entities:
+      - sensor.speedtest_ping
+      - sensor.speedtest_download
+      - sensor.speedtest_upload
+
+sensor:
+  platform: yr
+  monitored_conditions:
+    - temperature
+    - symbol
+    - precipitation
+    - windSpeed
+    - pressure
+    - windDirection
+    - humidity
+    - fog
+    - cloudiness
+    - lowClouds
+    - mediumClouds
+    - highClouds
+    - dewpointTemperature
+
+sensor 2:
+  platform: speedtest
+  minute: 30
+  hour:
+    - 0
+    - 6
+    - 12
+    - 18
+  monitored_conditions:
+    - ping
+    - download
+    - upload
+
+#sensor 3:
+#  platform: yweather
+#  woeid: 886226
+#  forecast: 0
+#  monitored_conditions:
+#   - weather_current
+#   - temp_min
+#   - temp_max
+#   - wind_speed
+#   - humidity
+#   - temperature

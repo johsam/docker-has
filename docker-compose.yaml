@@ -3,23 +3,27 @@ version: '3'
 services:
   portainer:
     container_name: portainer
-    image: portainer/portainer
+    image: portainer/portainer:1.20.1
     volumes:
       - /srv/docker/portainer:/data
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
       - "9000:9000"
+    logging:
+      driver: syslog
   homeassistant:
     container_name: home-assistant
+    image: homeassistant/raspberrypi3-homeassistant:0.86.4
     restart: unless-stopped
-    image: homeassistant/raspberrypi3-homeassistant
-    #devices:
-    #  - /dev/serial/by-id/usb-0658_0200-if00:/dev/usbzwave
+    logging:
+      driver: syslog
+    devices:
+      - /dev/serial/by-id/usb-0658_0200-if00:/dev/serial/by-id/usb-0658_0200-if00
     volumes:
       - /srv/docker/hass-config:/config
       - /etc/localtime:/etc/localtime:ro
       - /srv/docker/hass_media:/media
+      - /home/pi/git/docker-has/hass-config:/home/pi/git/docker-has/hass-config:ro
     network_mode: host
-    privileged: true
     ports:
       - "8123:8123"
