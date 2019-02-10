@@ -15,19 +15,34 @@ homeassistant:
   time_zone: !secret home_timezone
 
   customize:
-    zwave.fibaro_system_fgk101_door_opening_sensor:
+    binary_sensor.hallen_sensor:
       friendly_name: Hallen
-      device_class: opening
+      device_class: door
     sensor.yr_cloudiness:
       friendly_name: Molnighet
     sensor.yr_wind_direction:
-      friendly_name: Riktning
+      friendly_name: Vind Riktning
     sensor.yr_wind_speed:
-      friendly_name: Hastighet
+      friendly_name: Vind Hastighet
     sensor.yr_pressure:
       friendly_name: Lufttryck
     sensor.yr_symbol:
       friendly_name: Prognos
+    sensor.yr_humidity:
+      friendly_name: Luftfuktighet
+    sensor.yr_precipitation:
+      friendly_name: Regn
+    sensor.temperatur_nu:
+      icon: mdi:temperature-celsius
+    switch.switch_4:
+      friendly_name: 'Julgranen'
+      icon: mdi:lightbulb-on
+    switch.switch_5:
+      friendly_name: 'Lampa Hallen'
+      device_class: light
+      
+#icon: mdi:lightbulb-on
+ 
 
 # Show links to resources in log and frontend
 #introduction:
@@ -102,10 +117,10 @@ group:
     view: no
     entities:
       - binary_sensor.hallen_sensor
-      - sensor.yr_symbol
-      - sun.sun
-      - group.yr
-      - group.speedtest
+      - sensor.temperatur_nu
+      - variable.countdown_timer
+      - switch.switch_4
+      - switch.switch_5
   yr:
     name: YR
     view: no
@@ -113,10 +128,10 @@ group:
       - sensor.yr_symbol
       - sensor.yr_cloudiness
       - sensor.yr_pressure
-      - sensor.yr_condition
+      - sensor.yr_precipitation
+      - sensor.yr_humidity      
       - sensor.yr_wind_direction
       - sensor.yr_wind_speed
-      - sensor.yr_condition
   speedtest:
     name: Speedtest
     view: no
@@ -125,44 +140,18 @@ group:
       - sensor.speedtest_download
       - sensor.speedtest_upload
 
-sensor:
-  platform: yr
-  monitored_conditions:
-    - temperature
-    - symbol
-    - precipitation
-    - windSpeed
-    - pressure
-    - windDirection
-    - humidity
-    - fog
-    - cloudiness
-    - lowClouds
-    - mediumClouds
-    - highClouds
-    - dewpointTemperature
 
-sensor 2:
-  platform: speedtest
-  minute: 30
-  hour:
-    - 0
-    - 6
-    - 12
-    - 18
-  monitored_conditions:
-    - ping
-    - download
-    - upload
+# Includes
 
-#sensor 3:
-#  platform: yweather
-#  woeid: 886226
-#  forecast: 0
-#  monitored_conditions:
-#   - weather_current
-#   - temp_min
-#   - temp_max
-#   - wind_speed
-#   - humidity
-#   - temperature
+sensor: !include_dir_list sensors/
+switch: !include_dir_list switches/
+
+
+variable:
+  countdown_timer:
+    value: 30
+    restore: true
+    attributes:
+      friendly_name: 'Countdown'
+      unit_of_measurement: "°C"
+      icon: mdi:alarm

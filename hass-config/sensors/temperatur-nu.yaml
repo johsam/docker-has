@@ -1,0 +1,7 @@
+platform: rest
+name: Temperatur.nu
+scan_interval:
+  seconds: 300
+resource: !secret temperatur_nu_url
+unit_of_measurement: "°C"
+value_template: '{{ value_json.temperature }}'
