@@ -1,0 +1,10 @@
+platform: rest
+name: switch_3
+scan_interval:
+  seconds: 3600
+resource: !secret switch_3_rest_url
+body_on:  '{"state":"on"}'
+body_off: '{"state":"off"}'
+is_on_template: '{{value_json.state}}'
+headers:
+  Content-Type: application/json

@@ -1,24 +1,30 @@
 version: '3'
 
 services:
-  portainer:
-    container_name: portainer
-    image: portainer/portainer:1.20.1
+  portainer-agent:
+    container_name: portainer-agent
+    image: portainer/agent:1.5.1
     volumes:
-      - /srv/docker/portainer:/data
+      - /var/lib/docker/volumes:/var/lib/docker/volumes
       - /var/run/docker.sock:/var/run/docker.sock
     ports:
-      - "9000:9000"
+      - "9001:9001"
     logging:
-      driver: syslog
+      driver: journald
+      options:
+        tag: portainer-agent
+  
   homeassistant:
     container_name: home-assistant
-    image: homeassistant/raspberrypi3-homeassistant:0.86.4
+    image: homeassistant/raspberrypi3-homeassistant:0.111.4
     restart: unless-stopped
     logging:
-      driver: syslog
+      driver: journald
+      options:
+        tag: homeassistant
     devices:
-      - /dev/serial/by-id/usb-0658_0200-if00:/dev/serial/by-id/usb-0658_0200-if00
+      # - /dev/serial/by-id/usb-0658_0200-if00:/dev/serial/by-id/usb-0658_0200-if00
+      - /dev/serial/by-id/usb-0658_0200-if00:/dev/usbzwave
     volumes:
       - /srv/docker/hass-config:/config
       - /etc/localtime:/etc/localtime:ro

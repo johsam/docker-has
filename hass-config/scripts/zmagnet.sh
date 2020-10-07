@@ -36,5 +36,5 @@ now=$(date +%s)
 
 eval $(parse_yaml ${scriptDir}/../secrets.yaml secrets_)
 
+curl -s "http://${secrets_hallonet_ip}:80/hallonet/cgi-bin/zmagnet.cgi?id=7&state=${state}&now=${now}"
 
-curl "http://${secrets_hallonet_ip}:80/hallonet/cgi-bin/zmagnet.cgi?id=7&state=${state}&now=${now}"

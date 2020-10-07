@@ -15,7 +15,7 @@ homeassistant:
   time_zone: !secret home_timezone
 
   customize:
-    binary_sensor.hallen_sensor:
+    binary_sensor.fibaro_system_fgk101_door_opening_sensor_sensor:
       friendly_name: Hallen
       device_class: door
     sensor.yr_cloudiness:
@@ -34,13 +34,38 @@ homeassistant:
       friendly_name: Regn
     sensor.temperatur_nu:
       icon: mdi:temperature-celsius
+    switch.switch_1:
+      friendly_name: 'TV:n'
+      icon: mdi:lightbulb-on 
+      device_class: light
+    switch.switch_2:
+      friendly_name: 'Köksfönstret'
+      icon: mdi:lightbulb-on 
+      device_class: light
+    switch.switch_3:
+      friendly_name: 'Ebbas Rum'
+      icon: mdi:lightbulb-on 
+      device_class: light
     switch.switch_4:
       friendly_name: 'Julgranen'
       icon: mdi:lightbulb-on
+      device_class: light
     switch.switch_5:
       friendly_name: 'Lampa Hallen'
+      icon: mdi:lightbulb-on
       device_class: light
-      
+    switch.switch_6:
+      friendly_name: 'Ebbas Fönster'
+      icon: mdi:lightbulb-on
+      device_class: light
+
+  auth_providers:
+    - type: trusted_networks
+      trusted_networks:      
+        - 127.0.0.1
+        - !secret http_trust
+    - type: homeassistant
+
 #icon: mdi:lightbulb-on
  
 
@@ -55,8 +80,13 @@ sun:
 
 # Checks for available updates
 updater:
+  reporting: false
 
 config:
+
+system_health:
+
+mobile_app:
 
 # Enables the frontend
 frontend:
@@ -78,52 +108,66 @@ influxdb:
 
 zwave:
   polling_interval: 60000
-#  usb_path: /dev/usbzwave
+  usb_path: /dev/usbzwave
 
-
-http:
-  trusted_networks:
-    - 127.0.0.1
-    - !secret http_trust
+variable:
+  door_counter:
+    value: 0
+    restore: false
+    attributes:
+      friendly_name: 'Door Counter'
+      icon: mdi:counter
 
 shell_command:
   tell_hallonet: '/config/scripts/zmagnet.sh {{to}}'
 
+# Includes
+
+sensor: !include_dir_list sensors/
+switch: !include_dir_list switches/
 #automation: !include automations.yaml
 
 automation:
-- alias: Door Open
-  trigger:
-    platform: state
-    entity_id: binary_sensor.hallen_sensor
-    to: 'on'
-  action:
-    service: shell_command.tell_hallonet
-    data:
-      to: 'on'
-- alias: Door Closed
-  trigger:
-    platform: state
-    entity_id: binary_sensor.hallen_sensor
-    to: 'off'
-  action:
-    service: shell_command.tell_hallonet
-    data:
-      to: 'off'
+  - alias: Hallen Door
+    trigger:
+      platform: state
+      entity_id: binary_sensor.fibaro_system_fgk101_door_opening_sensor_sensor
+    action:
+      - service: shell_command.tell_hallonet
+        data_template:
+          to: '{{ trigger.to_state.state }}'
+      - condition: state
+        entity_id: binary_sensor.fibaro_system_fgk101_door_opening_sensor_sensor
+        state: 'on'
+      - service: variable.set_variable
+        data:
+          variable: door_counter
+          value_template: '{{ (variable.state | int) + 1 }}'
+#  - alias: Hallen Light On
+#    trigger:
+#      platform: time
+#      at: "05:45:00"
+#    action:
+#      - service: switch.turn_on
+#        entity_id: switch.switch_5
 
 group:
   default_view:
     name: Ripstigen
-    view: no
+    #view: no
     entities:
-      - binary_sensor.hallen_sensor
+      - binary_sensor.fibaro_system_fgk101_door_opening_sensor_sensor
       - sensor.temperatur_nu
-      - variable.countdown_timer
+      - variable.door_counter
+      - switch.switch_1
+      - switch.switch_2
+      - switch.switch_3
       - switch.switch_4
       - switch.switch_5
+      - switch.switch_6
   yr:
     name: YR
-    view: no
+    #view: no
     entities:
       - sensor.yr_symbol
       - sensor.yr_cloudiness
@@ -132,26 +176,23 @@ group:
       - sensor.yr_humidity      
       - sensor.yr_wind_direction
       - sensor.yr_wind_speed
-  speedtest:
+
+  speedtestdotnet:
     name: Speedtest
-    view: no
+    #view: no
     entities:
       - sensor.speedtest_ping
       - sensor.speedtest_download
       - sensor.speedtest_upload
 
+speedtestdotnet:
+  scan_interval:
+    minutes: 30
+    hours: 6
+  monitored_conditions:
+    - ping
+    - download
+    - upload
 
-# Includes
-
-sensor: !include_dir_list sensors/
-switch: !include_dir_list switches/
 
 
-variable:
-  countdown_timer:
-    value: 30
-    restore: true
-    attributes:
-      friendly_name: 'Countdown'
-      unit_of_measurement: "°C"
-      icon: mdi:alarm
