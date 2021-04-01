@@ -1,4 +1,4 @@
-platform: yr
+platform: weather_data
 monitored_conditions:
   - temperature
   - symbol
