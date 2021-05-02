@@ -113,7 +113,7 @@ zwave:
 variable:
   door_counter:
     value: 0
-    restore: false
+    #restore: false
     attributes:
       friendly_name: 'Door Counter'
       icon: mdi:counter
@@ -139,10 +139,14 @@ automation:
       - condition: state
         entity_id: binary_sensor.fibaro_system_fgk101_door_opening_sensor_sensor
         state: 'on'
-      - service: variable.set_variable
-        data:
-          variable: door_counter
-          value_template: '{{ (variable.state | int) + 1 }}'
+      #- service: variable.set_variable
+      #  data:
+      #    variable: door_counter
+      #    value: >
+      #      {{ (variable.state | int) + 1 }}
+          #value_template: '{{ (variable.state | int) + 1 }}'          
+          #value: '{{ (variable.state | int) + 1 }}'
+
 #  - alias: Hallen Light On
 #    trigger:
 #      platform: time
